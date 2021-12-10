@@ -9,6 +9,8 @@ import com.parim.weeklycalendar.adapters.HorizontalRecyclerCalendarAdapter
 import com.parim.weeklycalendar.contracts.IDateSelected
 import com.parim.weeklycalendar.utils.RecyclerCalendarConfiguration
 import com.parim.weeklycalendar.databinding.ActivityMainBinding
+import com.parim.weeklycalendar.db.HolidayDAO
+import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.module.HolidayModule
 import com.parim.weeklycalendar.provider.HolidayServiceProvider
 import com.parim.weeklycalendar.viewmodels.CalendarViewModel
@@ -59,7 +61,7 @@ class CalendarActivity : AppCompatActivity() {
     private fun onProvideViewModel() {
         calendarViewModel = ViewModelProviders.of(
             this,
-            ViewModelFactory(HolidayModule(HolidayServiceProvider()))
+            ViewModelFactory(HolidayModule(HolidayServiceProvider()), HolidayDAO())
         ).get(CalendarViewModel::class.java)
     }
 

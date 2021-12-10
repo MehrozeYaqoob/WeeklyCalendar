@@ -1,3 +1,3 @@
 package com.parim.weeklycalendar.model
 
-data class EEHolidays(private val name: String,  private val type: String)
+data class EEHolidays(val name: String, val type: String)

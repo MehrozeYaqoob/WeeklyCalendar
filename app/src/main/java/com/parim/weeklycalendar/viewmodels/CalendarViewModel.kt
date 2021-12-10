@@ -32,26 +32,15 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository):View
         compositeDisposable.dispose()
     }
 
-    fun getHolidays(): LiveData<Resource<ResponseDTO>> {
-        return holidays
-    }
 
     private val callbackHolidayList = object : IRepositoryCallback<Holiday> {
 
         override fun onSuccess(body: Holiday?) {
-            TODO("Not yet implemented")
+
         }
 
         override fun onFailure(message: String?) {
 
         }
-
-        override fun onError(errorResponse: String?) {
-
-        }
-
-        override fun onRequestTimeOut() {
-        }
-
     }
 }
