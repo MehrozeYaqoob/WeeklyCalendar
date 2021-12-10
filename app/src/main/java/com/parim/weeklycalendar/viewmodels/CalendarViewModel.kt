@@ -1,17 +1,16 @@
 package com.parim.weeklycalendar.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.parim.weeklycalendar.BuildConfig
+import com.parim.weeklycalendar.contracts.IRepositoryCallback
+import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.model.RequestDTO
 import com.parim.weeklycalendar.model.Resource
 import com.parim.weeklycalendar.model.ResponseDTO
 import com.parim.weeklycalendar.repositories.CalendarRepository
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 
 class CalendarViewModel(private val calendarRepository: CalendarRepository):ViewModel() {
 
@@ -24,17 +23,8 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository):View
 
     private fun fetchHolidays() {
         holidays.postValue(Resource.loading(null))
-        compositeDisposable.add(
-            calendarRepository.getHolidays(RequestDTO(BuildConfig.API_KEY, startDate = "2019-02-01", endDate = "2019-02-28"))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ holidayList ->
-                    Log.d("Holidays", "fetchHolidays: "+holidayList)
-                    holidays.postValue(Resource.success(holidayList))
-                }, { throwable ->
-                    holidays.postValue(Resource.error("Something Went Wrong", null))
-                })
-        )
+        val requestDTO  = RequestDTO(BuildConfig.API_KEY, startDate = "2019-02-01", endDate = "2019-02-28")
+        calendarRepository.getHolidays(requestDTO, callbackHolidayList)
     }
 
     override fun onCleared() {
@@ -44,5 +34,24 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository):View
 
     fun getHolidays(): LiveData<Resource<ResponseDTO>> {
         return holidays
+    }
+
+    private val callbackHolidayList = object : IRepositoryCallback<Holiday> {
+
+        override fun onSuccess(body: Holiday?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun onFailure(message: String?) {
+
+        }
+
+        override fun onError(errorResponse: String?) {
+
+        }
+
+        override fun onRequestTimeOut() {
+        }
+
     }
 }
