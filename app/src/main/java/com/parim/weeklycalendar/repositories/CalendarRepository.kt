@@ -11,12 +11,14 @@ import com.google.gson.reflect.TypeToken
 import com.parim.weeklycalendar.db.HolidayDAO
 import com.parim.weeklycalendar.model.EEHolidays
 import com.parim.weeklycalendar.model.Holiday
+import com.parim.weeklycalendar.model.RealmDTO
 import org.json.JSONObject
 import java.util.*
 
 
 class CalendarRepository(private val holidayModule: HolidayModule, private val holidayDAO: HolidayDAO) {
-    fun getHolidays(requestDTO: RequestDTO, callbackHolidays: IRepositoryCallback<Holiday>?) {
+
+    fun getHolidays(requestDTO: RequestDTO, callbackRemoteDataFetched: IRepositoryCallback<Holiday>?) {
         val callback = holidayModule.getHolidays(requestDTO)
 
         callback.enqueue(object : Callback<Object> {
@@ -28,13 +30,23 @@ class CalendarRepository(private val holidayModule: HolidayModule, private val h
                 val holidayMapType = object : TypeToken<HashMap<String, List<EEHolidays>>>() {}.type
                 val  mapType = Gson().fromJson<HashMap<String, List<EEHolidays>>>(holidayJSONObject.toString(),holidayMapType)
                 val holidays =  Holiday(mapType)
-                callbackHolidays?.onSuccess(holidays)
-                holidayDAO.addHoliday(holidays)
+                when(error){
+                    false  ->  callbackRemoteDataFetched?.onSuccess(holidays)
+                    else ->  callbackRemoteDataFetched?.onFailure(data.getString("reason" ?: ""))
+                }
             }
             override fun onFailure(call: Call<Object>, t: Throwable) {
-                callbackHolidays?.onFailure(t.localizedMessage)
+                callbackRemoteDataFetched?.onFailure(t.localizedMessage)
             }
         })
+    }
+
+    fun onSaveRemoteData(holidays: Holiday, callbackSaveRemoteData: IRepositoryCallback<Boolean>){
+        holidayDAO.onSaveRemoteData(holidays,callbackSaveRemoteData)
+    }
+
+    fun onRetrieveLocalData(dateSelected: String, callbackGetLocalData: IRepositoryCallback<List<RealmDTO>>){
+        holidayDAO.onRetrieveLocalData(dateSelected,callbackGetLocalData)
     }
 
 }

@@ -10,7 +10,6 @@ import com.parim.weeklycalendar.contracts.IDateSelected
 import com.parim.weeklycalendar.utils.RecyclerCalendarConfiguration
 import com.parim.weeklycalendar.databinding.ActivityMainBinding
 import com.parim.weeklycalendar.db.HolidayDAO
-import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.module.HolidayModule
 import com.parim.weeklycalendar.provider.HolidayServiceProvider
 import com.parim.weeklycalendar.viewmodels.CalendarViewModel
@@ -99,6 +98,9 @@ class CalendarActivity : AppCompatActivity() {
     }
 
     private fun onObserveLiveData() {
+        calendarViewModel.holidayLiveData.observe(this, androidx.lifecycle.Observer {
+
+        })
     }
 
     private fun onAttachPageSnap() {

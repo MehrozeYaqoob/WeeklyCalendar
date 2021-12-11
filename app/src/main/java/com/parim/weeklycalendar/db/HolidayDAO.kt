@@ -1,28 +1,27 @@
 package com.parim.weeklycalendar.db
 
+import com.parim.weeklycalendar.contracts.IRepositoryCallback
 import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.model.RealmDTO
 import io.realm.Realm
 
 class HolidayDAO(private val realm: Realm = Realm.getDefaultInstance()) {
 
-    fun addHoliday(holidays: Holiday){
-        val list = mutableListOf<RealmDTO>()
-        realm.executeTransactionAsync {
-            holidays.hashMap.forEach { date ->
-                date.value.forEach {
-                    val realmObject =  RealmDTO(date = date.key )
-                    realmObject.name  =  it.name
-                    realmObject.type =  it.type
-                    list.add(realmObject)
-                }
-            }
+    fun onSaveRemoteData(holiday: Holiday, callbackSaveRemoteData: IRepositoryCallback<Boolean>){
+        val list = holiday.getFlatHolidayData()
+        realm.executeTransactionAsync ({
             when { list.size > 0  -> it.deleteAll() }
-            it.copyToRealmOrUpdate(list)
-        }
+            it.copyToRealmOrUpdate(list) /*This is slower than insertOrUpdate*/
+//            it.insertOrUpdate(list)
+        },Realm.Transaction.OnSuccess {
+            callbackSaveRemoteData.onSuccess(true)
+        })
     }
 
-    fun getHolidays(startDate: String, endDate: String){
-        
+    fun onRetrieveLocalData(dateSelected: String, callbackGetLocalData: IRepositoryCallback<List<RealmDTO>>){
+        realm.executeTransactionAsync {
+            val data =  it.where(RealmDTO::class.java).equalTo("date",dateSelected).findAll()
+            callbackGetLocalData.onSuccess(data)
+        }
     }
 }
