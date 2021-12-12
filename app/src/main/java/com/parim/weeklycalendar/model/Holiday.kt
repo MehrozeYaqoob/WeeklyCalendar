@@ -2,7 +2,7 @@ package com.parim.weeklycalendar.model
 
 data class Holiday(val hashMap: HashMap<String, List<EEHolidays>>){
 
-    fun getFlatHolidayData(): MutableList<RealmDTO> {
+    fun getFlatHolidayData(): List<RealmDTO> {
         val list = mutableListOf<RealmDTO>()
         hashMap.forEach { date ->
             date.value.forEach {

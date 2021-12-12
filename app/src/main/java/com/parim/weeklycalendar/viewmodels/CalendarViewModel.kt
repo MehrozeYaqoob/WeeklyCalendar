@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.parim.weeklycalendar.BuildConfig
+import com.parim.weeklycalendar.contracts.IRealmCallback
 import com.parim.weeklycalendar.contracts.IRepositoryCallback
+import com.parim.weeklycalendar.model.FilteredRealmDTO
 import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.model.RealmDTO
 import com.parim.weeklycalendar.model.RequestDTO
@@ -12,9 +14,9 @@ import com.parim.weeklycalendar.repositories.CalendarRepository
 
 class CalendarViewModel(private val calendarRepository: CalendarRepository):ViewModel() {
 
-    private val holidaysLiveData = MutableLiveData<Holiday>()
+    private val holidaysLiveData = MutableLiveData<List<FilteredRealmDTO>>()
     val holidayLiveData =  holidaysLiveData
-    lateinit var callbackRemoteDataFetched: IRepositoryCallback<Holiday>
+    lateinit var callbackRemoteDataFetched: IRepositoryCallback<RealmDTO>
 
     init {
         onInitCallback()
@@ -22,12 +24,10 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository):View
     }
 
     private fun onInitCallback(){
-         callbackRemoteDataFetched = object : IRepositoryCallback<Holiday> {
-
-            override fun onSuccess(body: Holiday?) {
-                body?.let { calendarRepository.onSaveRemoteData(it,callbackSaveRemoteData) }
+         callbackRemoteDataFetched = object : IRepositoryCallback<RealmDTO> {
+            override fun onSuccess(body: List<RealmDTO>) {
+                body.let { calendarRepository.onSaveRemoteData(it,callbackSaveRemoteData) }
             }
-
             override fun onFailure(message: String?) {
 
             }
@@ -39,15 +39,13 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository):View
         calendarRepository.getHolidays(requestDTO, callbackRemoteDataFetched)
     }
 
+    val callbackSaveRemoteData = object : IRealmCallback<Boolean> {
 
-
-    val callbackSaveRemoteData = object : IRepositoryCallback<Boolean> {
-
-        override fun onSuccess(completed: Boolean?) {
-            when(completed){
+        override fun onSuccess(success: Boolean) {
+            when(success){
                 true -> {
-                /*update live data by fetching from db*/
-                calendarRepository.onRetrieveLocalData(dateSelected  = "2019-02-24", callbackRetrieveLocalData )
+                    /*fetching from db*/
+                    calendarRepository.onRetrieveLocalData(dateSelected = "2019-02-24", callbackRetrieveLocalData )
                 }
             }
         }
@@ -57,10 +55,11 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository):View
         }
     }
 
-    val callbackRetrieveLocalData = object : IRepositoryCallback<List<RealmDTO>> {
+    val callbackRetrieveLocalData = object : IRepositoryCallback<FilteredRealmDTO> {
 
-        override fun onSuccess(body: List<RealmDTO>?) {
-            Log.e("",body?.size.toString())
+        override fun onSuccess(body: List<FilteredRealmDTO>) {
+            Log.e("assd",body.size.toString())
+            holidayLiveData.postValue(body)
         }
 
         override fun onFailure(message: String?) {

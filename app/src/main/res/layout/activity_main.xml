@@ -25,25 +25,16 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:gravity="center"
+        android:layout_marginTop="20dp"
         android:orientation="vertical">
 
-        <TextView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/holidayRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/text_selected_date" />
-
-        <TextView
-            android:id="@+id/textViewSelectedDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textSize="@dimen/text_size_32"
-            android:textStyle="bold"
-            tools:text="21" />
+            android:layout_marginTop="@dimen/margin_large" />
 
     </LinearLayout>
 

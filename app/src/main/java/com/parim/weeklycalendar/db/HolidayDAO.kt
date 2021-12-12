@@ -1,26 +1,29 @@
 package com.parim.weeklycalendar.db
 
+import com.parim.weeklycalendar.contracts.IRealmCallback
 import com.parim.weeklycalendar.contracts.IRepositoryCallback
+import com.parim.weeklycalendar.model.FilteredRealmDTO
 import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.model.RealmDTO
 import io.realm.Realm
 
 class HolidayDAO(private val realm: Realm = Realm.getDefaultInstance()) {
 
-    fun onSaveRemoteData(holiday: Holiday, callbackSaveRemoteData: IRepositoryCallback<Boolean>){
-        val list = holiday.getFlatHolidayData()
+    fun onSaveRemoteData(holidays: List<RealmDTO>, callbackSaveRemoteData: IRealmCallback<Boolean>){
         realm.executeTransactionAsync ({
-            when { list.size > 0  -> it.deleteAll() }
-            it.copyToRealmOrUpdate(list) /*This is slower than insertOrUpdate*/
-//            it.insertOrUpdate(list)
+            when { holidays.isNotEmpty() -> it.deleteAll() }
+//            it.copyToRealmOrUpdate(list) /*This is slower than insertOrUpdate*/
+            it.insertOrUpdate(holidays)
         },Realm.Transaction.OnSuccess {
             callbackSaveRemoteData.onSuccess(true)
         })
     }
 
-    fun onRetrieveLocalData(dateSelected: String, callbackGetLocalData: IRepositoryCallback<List<RealmDTO>>){
-        realm.executeTransactionAsync {
-            val data =  it.where(RealmDTO::class.java).equalTo("date",dateSelected).findAll()
+    fun onRetrieveLocalData(dateSelected: String, callbackGetLocalData: IRepositoryCallback<FilteredRealmDTO>){
+        realm.executeTransactionAsync { realm1 ->
+            val data =  realm1.where(RealmDTO::class.java).equalTo("date",dateSelected).findAll().map {
+                FilteredRealmDTO(id = it.id, name = it.name, date = it.date, type = it.type  ) }
+
             callbackGetLocalData.onSuccess(data)
         }
     }
