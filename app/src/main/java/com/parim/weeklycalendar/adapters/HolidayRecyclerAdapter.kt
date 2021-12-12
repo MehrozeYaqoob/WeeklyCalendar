@@ -1,12 +1,12 @@
 package com.parim.weeklycalendar.adapters
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.parim.weeklycalendar.R
 import com.parim.weeklycalendar.model.FilteredRealmDTO
-import com.parim.weeklycalendar.model.RealmDTO
 import com.parim.weeklycalendar.viewholders.HolidayViewHolder
 
 
@@ -19,6 +19,9 @@ class HolidayRecyclerAdapter(private val holidayList: MutableList<FilteredRealmD
 
     override fun onBindViewHolder(holder: HolidayViewHolder, position: Int) {
         holder.textViewHoliday.text = holidayList[position].name
+        if(holidayList[position].type  == "public"){
+            holder.cardHoliday.setCardBackgroundColor(Color.parseColor("#FAFAFA"));
+        }
     }
 
     override fun getItemCount(): Int {
