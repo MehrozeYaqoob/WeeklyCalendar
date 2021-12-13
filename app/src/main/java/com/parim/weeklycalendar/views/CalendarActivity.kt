@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.parim.weeklycalendar.adapters.HolidayRecyclerAdapter
-import com.parim.weeklycalendar.utils.CalendarUtils
 import com.parim.weeklycalendar.adapters.HorizontalRecyclerCalendarAdapter
 import com.parim.weeklycalendar.contracts.IDateSelected
 import com.parim.weeklycalendar.utils.RecyclerCalendarConfiguration
@@ -19,7 +18,6 @@ import com.parim.weeklycalendar.provider.HolidayServiceProvider
 import com.parim.weeklycalendar.utils.LinearLayoutManagerWithSmoothScroller
 import com.parim.weeklycalendar.viewmodels.CalendarViewModel
 import com.parim.weeklycalendar.viewmodels.ViewModelFactory
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -48,7 +46,7 @@ class CalendarActivity : AppCompatActivity() {
         onLoadHolidayRecyclerAdapter()
         onObserveLiveData()
         onAttachPageSnap()
-        onLoadData()
+        onLoadData(date)
 //        binding.textViewSelectedDate.text =
 //            CalendarUtils.dateStringFromFormat(
 //                locale = recyclerViewConfiguration.calendarLocale,
@@ -95,13 +93,7 @@ class CalendarActivity : AppCompatActivity() {
                 selectedDate = date,
                 dateSelectListener = object : IDateSelected {
                     override fun onDateSelected(date: Date) {
-//                        binding.textViewSelectedDate.text =
-//                            CalendarUtils.dateStringFromFormat(
-//                                locale = recyclerViewConfiguration.calendarLocale,
-//                                date = date,
-//                                format = CalendarUtils.LONG_DATE_FORMAT
-//                            )
-//                                ?: ""
+                        onLoadData(date)
                     }
                 }
             )
@@ -130,7 +122,7 @@ class CalendarActivity : AppCompatActivity() {
         snapHelper.attachToRecyclerView(binding.calendarRecyclerView)
     }
 
-    private fun onLoadData(){
+    private fun onLoadData(date: Date) {
         calendarViewModel.onLoadData(this, date)
     }
 }

@@ -29,12 +29,9 @@ class HolidayRecyclerAdapter(private val holidayList: MutableList<FilteredRealmD
     }
 
     fun onAddHolidayData(list:  List<FilteredRealmDTO>){
-        when{
-          list.isNotEmpty() -> {
-              holidayList.clear()
-              holidayList.addAll(list)
-              notifyDataSetChanged()
-          }
-        }
+        holidayList.clear()
+        holidayList.addAll(list)
+        // We can use diff utils here but since list wont contain to  much data in this case so going with dataSetChange method
+        notifyDataSetChanged()
     }
 }
