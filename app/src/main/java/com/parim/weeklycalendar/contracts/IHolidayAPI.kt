@@ -7,5 +7,5 @@ import retrofit2.http.POST
 
 interface IHolidayAPI {
     @POST("/api/holidays")
-    fun getHolidays(@Body requestDTO: RequestDTO): Call<Object>//Single<ResponseDTO>
+    fun getHolidays(@Body requestDTO: RequestDTO): Call<Object>
 }

@@ -19,6 +19,7 @@ import com.parim.weeklycalendar.provider.HolidayServiceProvider
 import com.parim.weeklycalendar.utils.LinearLayoutManagerWithSmoothScroller
 import com.parim.weeklycalendar.viewmodels.CalendarViewModel
 import com.parim.weeklycalendar.viewmodels.ViewModelFactory
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -47,7 +48,7 @@ class CalendarActivity : AppCompatActivity() {
         onLoadHolidayRecyclerAdapter()
         onObserveLiveData()
         onAttachPageSnap()
-
+        onLoadData()
 //        binding.textViewSelectedDate.text =
 //            CalendarUtils.dateStringFromFormat(
 //                locale = recyclerViewConfiguration.calendarLocale,
@@ -129,4 +130,7 @@ class CalendarActivity : AppCompatActivity() {
         snapHelper.attachToRecyclerView(binding.calendarRecyclerView)
     }
 
+    private fun onLoadData(){
+        calendarViewModel.onLoadData(this, date)
+    }
 }

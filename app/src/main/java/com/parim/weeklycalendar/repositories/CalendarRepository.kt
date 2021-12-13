@@ -1,5 +1,6 @@
 package com.parim.weeklycalendar.repositories
 
+import android.content.Context
 import com.google.gson.Gson
 import com.parim.weeklycalendar.contracts.IRepositoryCallback
 import com.parim.weeklycalendar.module.HolidayModule
@@ -16,7 +17,7 @@ import java.util.*
 
 class CalendarRepository(private val holidayModule: HolidayModule, private val holidayDAO: HolidayDAO) {
 
-    fun getHolidays(requestDTO: RequestDTO, callbackRemoteDataFetched: IRepositoryCallback<RealmDTO>?) {
+    fun getHolidays(context: Context, requestDTO: RequestDTO, callbackRemoteDataFetched: IRepositoryCallback<RealmDTO>?) {
         val callback = holidayModule.getHolidays(requestDTO)
 
         callback.enqueue(object : Callback<Object> {
@@ -29,7 +30,7 @@ class CalendarRepository(private val holidayModule: HolidayModule, private val h
                 val  mapType = Gson().fromJson<HashMap<String, List<EEHolidays>>>(holidayJSONObject.toString(),holidayMapType)
                 val holidays =  Holiday(mapType)
                 when(error){
-                    false  ->  callbackRemoteDataFetched?.onSuccess(holidays.getFlatHolidayData())
+                    false  ->  callbackRemoteDataFetched?.onSuccess(context,holidays.getFlatHolidayData(), requestDTO.startDate)
                     else ->  callbackRemoteDataFetched?.onFailure(data.getString("reason" ?: ""))
                 }
             }
@@ -39,8 +40,8 @@ class CalendarRepository(private val holidayModule: HolidayModule, private val h
         })
     }
 
-    fun onSaveRemoteData(holidays: List<RealmDTO>, callbackSaveRemoteData: IRealmCallback<Boolean>){
-        holidayDAO.onSaveRemoteData(holidays,callbackSaveRemoteData)
+    fun onSaveRemoteData(holidays: List<RealmDTO>, callbackSaveRemoteData: IRealmCallback<Boolean>, dateSelected: String){
+        holidayDAO.onSaveRemoteData(holidays,callbackSaveRemoteData,dateSelected)
     }
 
     fun onRetrieveLocalData(dateSelected: String, callbackGetLocalData: IRepositoryCallback<FilteredRealmDTO>){
