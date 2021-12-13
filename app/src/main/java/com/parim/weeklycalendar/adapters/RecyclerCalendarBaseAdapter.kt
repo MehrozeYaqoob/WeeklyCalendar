@@ -1,5 +1,6 @@
 package com.parim.weeklycalendar.adapters
 
+import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.recyclerview.widget.GridLayoutManager
@@ -10,13 +11,14 @@ import com.parim.weeklycalendar.model.CalenderItem
 import java.util.*
 
 
+@SuppressLint("NotifyDataSetChanged")
 abstract class RecyclerCalendarBaseAdapter(
     startDate: Date,
     endDate: Date,
     private val configuration: RecyclerCalendarConfiguration
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var mHandlerThread: MyHandlerThread =
+    private var mHandlerThread: MyHandlerThread =
         MyHandlerThread(
             RecyclerCalendarBaseAdapter::class.java.simpleName
         )
@@ -101,19 +103,11 @@ abstract class RecyclerCalendarBaseAdapter(
                         calendarItemList.add(calendarEmptyWeek)
                     }
                 }
-                val calendarDateItem: CalenderItem =
-                    CalenderItem(
-                        date = startCalendar.time,
-                        spanSize = 1,
-                        isEmpty = false,
-                        isHeader = false
-                    )
+                val calendarDateItem = CalenderItem(date = startCalendar.time, spanSize = 1, isEmpty = false, isHeader = false)
                 calendarItemList.add(calendarDateItem)
                 startCalendar.add(Calendar.DATE, 1)
             }
-            handler.post(Runnable {
-                notifyDataSetChanged()
-            })
+            handler.post { notifyDataSetChanged() }
         }
 
         mHandlerThread.start()
@@ -141,7 +135,7 @@ abstract class RecyclerCalendarBaseAdapter(
 
     fun getItem(position: Int): CalenderItem? {
         return if (position < calendarItemList.size) {
-            calendarItemList[position];
+            calendarItemList[position]
         } else {
             null
         }

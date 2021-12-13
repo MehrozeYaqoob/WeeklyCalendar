@@ -1,11 +1,11 @@
 package com.parim.weeklycalendar.viewmodels
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.parim.weeklycalendar.BuildConfig
+import com.parim.weeklycalendar.R
 import com.parim.weeklycalendar.contracts.IRealmCallback
 import com.parim.weeklycalendar.contracts.IRepositoryCallback
 import com.parim.weeklycalendar.manager.PreferenceManager
@@ -13,6 +13,10 @@ import com.parim.weeklycalendar.model.FilteredRealmDTO
 import com.parim.weeklycalendar.model.RealmDTO
 import com.parim.weeklycalendar.model.RequestDTO
 import com.parim.weeklycalendar.repositories.CalendarRepository
+import com.parim.weeklycalendar.sealed.ErrorEvents
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -21,72 +25,73 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository): Vie
 
     private val holidaysLiveData = MutableLiveData<List<FilteredRealmDTO>>()
     val holidayLiveData =  holidaysLiveData
+    private val errorEventChannel = Channel<ErrorEvents>()
+    val errorEventFlow = errorEventChannel.receiveAsFlow()
 
-    private fun onRemoteDataFetched(context: Context,  startDate: String, endDate: String) {
-        val requestDTO  = RequestDTO(BuildConfig.API_KEY, startDate = startDate, endDate = endDate)
-        calendarRepository.getHolidays(context,requestDTO, callbackRemoteDataFetched)
-    }
-
-
-    @SuppressLint("SimpleDateFormat")
-    fun onLoadData(context:  Context, date: Date) {  //"2019-02-24"
-        val dateFormat =  SimpleDateFormat("yyyy-MM-dd");
+    // Step 0: Decide where to get data i.e: Remote or Local
+    fun onLoadData(context:  Context, today: Date) {
+        val dateFormat =  SimpleDateFormat("yyyy-MM-dd",Locale.US)
 
         val currentTime = System.currentTimeMillis()
         val lastFetchedTime  =  PreferenceManager.getLastUpdatedDate(context, currentTime )
         val diff = TimeUnit.DAYS.convert(currentTime - lastFetchedTime, TimeUnit.MILLISECONDS)
 
         val cal = Calendar.getInstance()
-        cal.time = date
+        cal.time = today
         cal.add(Calendar.MONTH,1)
 
         // This value 15 is configurable from remote config
         if(lastFetchedTime == currentTime || diff > 15){
             // fetch remote data
-            onRemoteDataFetched(context =  context,  startDate = dateFormat.format(date), endDate = dateFormat.format(cal.time))
+            onRemoteDataFetched(context =  context,  startDate = dateFormat.format(today), endDate = dateFormat.format(cal.time))
         }else{
             //fetch local data
-            calendarRepository.onRetrieveLocalData(dateSelected = dateFormat.format(date), callbackRetrieveLocalData )
+            calendarRepository.onRetrieveLocalData(context, dateSelected = dateFormat.format(today), callbackRetrieveLocalData )
         }
     }
 
+    // Step 1: Fetch data from server
+    private fun onRemoteDataFetched(context: Context,  startDate: String, endDate: String) {
+        val requestDTO  = RequestDTO(BuildConfig.API_KEY, startDate = startDate, endDate = endDate)
+        calendarRepository.getHolidays(context,requestDTO, callbackRemoteDataFetched)
+    }
+
+    // Step 2: Save data to realm database
     private val callbackRemoteDataFetched = object : IRepositoryCallback<RealmDTO> {
         override fun onSuccess(context: Context?, body: List<RealmDTO>, date: String) {
-            context?.let {  PreferenceManager.setLastUpdatedDate(it,System.currentTimeMillis()) }
-            body.let { calendarRepository.onSaveRemoteData(it,callbackSaveRemoteData,date) }
-
+            body.let { calendarRepository.onSaveRemoteData(context, it,callbackSaveRemoteData,date) }
         }
-        override fun onFailure(message: String?) {
-
+        override fun onFailure(context: Context?, message: String?) {
+            triggerErrorEvent(ErrorEvents.ErrorFetchingRemoteData(context?.getString(R.string.error_fetching_remote_data) ?: ""))
         }
     }
 
+    // Step 3: Fetch data from local database
     val callbackSaveRemoteData = object : IRealmCallback<Boolean> {
-
-        override fun onSuccess(success: Boolean, date: String) {
+        override fun onSuccess(context: Context?, success: Boolean, date: String) {
             when(success){
                 true -> {
-                    /*fetching from db*/
-                    calendarRepository.onRetrieveLocalData(dateSelected = date, callbackRetrieveLocalData )
+                    context?.let {  PreferenceManager.setLastUpdatedDate(it,System.currentTimeMillis()) }
+                    calendarRepository.onRetrieveLocalData(context,dateSelected = date, callbackRetrieveLocalData )
                 }
             }
         }
-
-        override fun onFailure(message: String?) {
-
+        override fun onFailure(context: Context?, message: String?) {
+            triggerErrorEvent(ErrorEvents.ErrorSavingRemoteData(context?.getString(R.string.error_saving_remote_data) ?: ""))
         }
     }
 
+    // Step 4: Update live data object
     val callbackRetrieveLocalData = object : IRepositoryCallback<FilteredRealmDTO> {
-
         override fun onSuccess(context: Context?, body: List<FilteredRealmDTO>, date: String) {
-            Log.e("assd",body.size.toString())
             holidayLiveData.postValue(body)
         }
-
-        override fun onFailure(message: String?) {
-
+        override fun onFailure(context: Context?, message: String?) {
+            triggerErrorEvent(ErrorEvents.ErrorRetrievingLocalData(context?.getString(R.string.error_retrieving_local_data) ?: ""))
         }
     }
 
+    fun triggerErrorEvent(errorEvents: ErrorEvents) = viewModelScope.launch {
+        errorEventChannel.send(errorEvents)
+    }
 }

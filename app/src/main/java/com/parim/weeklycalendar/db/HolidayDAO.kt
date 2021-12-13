@@ -1,31 +1,34 @@
 package com.parim.weeklycalendar.db
 
+import android.content.Context
 import com.parim.weeklycalendar.contracts.IRealmCallback
 import com.parim.weeklycalendar.contracts.IRepositoryCallback
 import com.parim.weeklycalendar.model.FilteredRealmDTO
-import com.parim.weeklycalendar.model.Holiday
 import com.parim.weeklycalendar.model.RealmDTO
 import io.realm.Realm
 
 class HolidayDAO(private val realm: Realm = Realm.getDefaultInstance()) {
 
-    fun onSaveRemoteData(holidays: List<RealmDTO>, callbackSaveRemoteData: IRealmCallback<Boolean>,dateSelected: String){
+    /* * This saves data fetched from server, in realm database */
+    fun onSaveRemoteData(context: Context?, holidays: List<RealmDTO>, callbackSaveRemoteData: IRealmCallback<Boolean>, dateSelected: String){
         realm.executeTransactionAsync ({
             when { holidays.isNotEmpty() -> it.deleteAll() }
-//            it.copyToRealmOrUpdate(list) /*This is slower than insertOrUpdate*/
             it.insertOrUpdate(holidays)
-        },Realm.Transaction.OnSuccess {
-            callbackSaveRemoteData.onSuccess(true,dateSelected)
+        }, {
+            callbackSaveRemoteData.onSuccess(context,true,dateSelected)
+        }, {
+            callbackSaveRemoteData.onFailure(context,it.localizedMessage)
         })
     }
 
-    fun onRetrieveLocalData(dateSelected: String, callbackGetLocalData: IRepositoryCallback<FilteredRealmDTO>){
-        val date = dateSelected
-        realm.executeTransactionAsync { realm1 ->
-            val data =  realm1.where(RealmDTO::class.java).equalTo("date",dateSelected).findAll().map {
-                FilteredRealmDTO(id = it.id, name = it.name, date = it.date, type = it.type  ) }
+    fun onRetrieveLocalData(context: Context?,dateSelected: String, callbackGetLocalData: IRepositoryCallback<FilteredRealmDTO>){
+        realm.executeTransactionAsync {
+            val data =
+                it.where(RealmDTO::class.java).equalTo("date", dateSelected).findAll().map {realmDTO->
+                    FilteredRealmDTO(id = realmDTO.id, name = realmDTO.name, date = realmDTO.date, type = realmDTO.type)
+                }
 
-            callbackGetLocalData.onSuccess(null, data, dateSelected)
+            callbackGetLocalData.onSuccess(context, data, dateSelected)
         }
     }
 }

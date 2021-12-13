@@ -1,7 +1,7 @@
 package com.parim.weeklycalendar.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,6 +32,7 @@ class HorizontalRecyclerCalendarAdapter(
         )
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
@@ -43,11 +44,7 @@ class HorizontalRecyclerCalendarAdapter(
 
         monthViewHolder.itemView.setOnClickListener(null)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            monthViewHolder.itemView.background = null
-        } else {
-            monthViewHolder.itemView.setBackgroundDrawable(null)
-        }
+        monthViewHolder.itemView.background = null
         monthViewHolder.textViewDay.setTextColor(
             ContextCompat.getColor(
                 context,
@@ -61,88 +58,83 @@ class HorizontalRecyclerCalendarAdapter(
             )
         )
 
-        if (calendarItem.isHeader) {
-            val selectedCalendar = Calendar.getInstance()
-            selectedCalendar.time = calendarItem.date
+        when {
+            calendarItem.isHeader -> {
+                val selectedCalendar = Calendar.getInstance()
+                selectedCalendar.time = calendarItem.date
 
-            val month: String = CalendarUtils.dateStringFromFormat(
-                locale = configuration.calendarLocale,
-                date = selectedCalendar.time,
-                format = CalendarUtils.DISPLAY_MONTH_FORMAT
-            ) ?: ""
-            val year = selectedCalendar[Calendar.YEAR].toLong()
-
-            monthViewHolder.textViewDay.text = year.toString()
-            monthViewHolder.textViewDate.text = month
-
-            monthViewHolder.itemView.setOnClickListener(null)
-        } else if (calendarItem.isEmpty) {
-            monthViewHolder.itemView.visibility = View.GONE
-            monthViewHolder.textViewDay.text = ""
-            monthViewHolder.textViewDate.text = ""
-        } else {
-            val calendarDate = Calendar.getInstance()
-            calendarDate.time = calendarItem.date
-
-            val stringCalendarTimeFormat: String =
-                CalendarUtils.dateStringFromFormat(
+                val month: String = CalendarUtils.dateStringFromFormat(
                     locale = configuration.calendarLocale,
-                    date = calendarItem.date,
-                    format = CalendarUtils.DB_DATE_FORMAT
-                )
-                    ?: ""
-            val stringSelectedTimeFormat: String =
-                CalendarUtils.dateStringFromFormat(
-                    locale = configuration.calendarLocale,
-                    date = selectedDate,
-                    format = CalendarUtils.DB_DATE_FORMAT
+                    date = selectedCalendar.time,
+                    format = CalendarUtils.DISPLAY_MONTH_FORMAT
                 ) ?: ""
+                val year = selectedCalendar[Calendar.YEAR].toLong()
 
-            if (stringCalendarTimeFormat == stringSelectedTimeFormat) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                monthViewHolder.textViewDay.text = year.toString()
+                monthViewHolder.textViewDate.text = month
+
+                monthViewHolder.itemView.setOnClickListener(null)
+            }
+            calendarItem.isEmpty -> {
+                monthViewHolder.itemView.visibility = View.GONE
+                monthViewHolder.textViewDay.text = ""
+                monthViewHolder.textViewDate.text = ""
+            }
+            else -> {
+                val calendarDate = Calendar.getInstance()
+                calendarDate.time = calendarItem.date
+
+                val stringCalendarTimeFormat: String =
+                    CalendarUtils.dateStringFromFormat(
+                        locale = configuration.calendarLocale,
+                        date = calendarItem.date,
+                        format = CalendarUtils.DB_DATE_FORMAT
+                    )
+                        ?: ""
+                val stringSelectedTimeFormat: String =
+                    CalendarUtils.dateStringFromFormat(
+                        locale = configuration.calendarLocale,
+                        date = selectedDate,
+                        format = CalendarUtils.DB_DATE_FORMAT
+                    ) ?: ""
+
+                if (stringCalendarTimeFormat == stringSelectedTimeFormat) {
                     monthViewHolder.itemView.background =
                         ContextCompat.getDrawable(context, R.drawable.layout_round_corner_filled)
-                } else {
-                    monthViewHolder.itemView.setBackgroundDrawable(
-                        ContextCompat.getDrawable(
+                    monthViewHolder.textViewDay.setTextColor(
+                        ContextCompat.getColor(
                             context,
-                            R.drawable.layout_round_corner_filled
+                            R.color.colorWhite
+                        )
+                    )
+                    monthViewHolder.textViewDate.setTextColor(
+                        ContextCompat.getColor(
+                            context,
+                            R.color.colorWhite
                         )
                     )
                 }
-                monthViewHolder.textViewDay.setTextColor(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.colorWhite
-                    )
-                )
-                monthViewHolder.textViewDate.setTextColor(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.colorWhite
-                    )
-                )
-            }
 
-            val day: String = CalendarUtils.dateStringFromFormat(
-                locale = configuration.calendarLocale,
-                date = calendarDate.time,
-                format = CalendarUtils.DISPLAY_WEEK_DAY_FORMAT
-            ) ?: ""
-
-            monthViewHolder.textViewDay.text = day
-
-            monthViewHolder.textViewDate.text =
-                CalendarUtils.dateStringFromFormat(
+                val day: String = CalendarUtils.dateStringFromFormat(
                     locale = configuration.calendarLocale,
                     date = calendarDate.time,
-                    format = CalendarUtils.DISPLAY_DATE_FORMAT
+                    format = CalendarUtils.DISPLAY_WEEK_DAY_FORMAT
                 ) ?: ""
 
-            monthViewHolder.itemView.setOnClickListener {
-                selectedDate = calendarItem.date
-                dateSelectListener.onDateSelected(calendarItem.date)
-                notifyDataSetChanged()
+                monthViewHolder.textViewDay.text = day
+
+                monthViewHolder.textViewDate.text =
+                    CalendarUtils.dateStringFromFormat(
+                        locale = configuration.calendarLocale,
+                        date = calendarDate.time,
+                        format = CalendarUtils.DISPLAY_DATE_FORMAT
+                    ) ?: ""
+
+                monthViewHolder.itemView.setOnClickListener {
+                    selectedDate = calendarItem.date
+                    dateSelectListener.run { onDateSelected(calendarItem.date) }
+                    notifyDataSetChanged()
+                }
             }
         }
     }

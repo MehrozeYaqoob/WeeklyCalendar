@@ -8,7 +8,7 @@ import retrofit2.Call
 
 class HolidayServiceProvider(private val api: IHolidayAPI = RetrofitProvider.createAPI(
     IHolidayAPI::class.java)) : IHolidayService {
-    override fun getHolidays(requestDTO: RequestDTO): Call<Object> {
+    override fun getHolidays(requestDTO: RequestDTO): Call<Any> {
         return api.getHolidays(requestDTO)
     }
 }

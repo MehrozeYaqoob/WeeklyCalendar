@@ -1,16 +1,19 @@
 package com.parim.weeklycalendar.adapters
 
-import android.graphics.Color
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.parim.weeklycalendar.R
+import com.parim.weeklycalendar.diffutils.HolidayDiffUtil
 import com.parim.weeklycalendar.model.FilteredRealmDTO
 import com.parim.weeklycalendar.viewholders.HolidayViewHolder
 
 
-class HolidayRecyclerAdapter(private val holidayList: MutableList<FilteredRealmDTO>): RecyclerView.Adapter<HolidayViewHolder>() {
+class HolidayRecyclerAdapter(var context: Context, private val holidayList: MutableList<FilteredRealmDTO>): RecyclerView.Adapter<HolidayViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HolidayViewHolder {
         val view: View = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_holiday_vertical, parent, false)
@@ -19,8 +22,8 @@ class HolidayRecyclerAdapter(private val holidayList: MutableList<FilteredRealmD
 
     override fun onBindViewHolder(holder: HolidayViewHolder, position: Int) {
         holder.textViewHoliday.text = holidayList[position].name
-        if(holidayList[position].type  == "public"){
-            holder.cardHoliday.setCardBackgroundColor(Color.parseColor("#FAFAFA"));
+        if(holidayList[position].type  == context.getString(R.string.holiday_type)){
+            holder.cardHoliday.setCardBackgroundColor(ContextCompat.getColor(context, R.color.grey_50))
         }
     }
 
@@ -29,9 +32,10 @@ class HolidayRecyclerAdapter(private val holidayList: MutableList<FilteredRealmD
     }
 
     fun onAddHolidayData(list:  List<FilteredRealmDTO>){
-        holidayList.clear()
-        holidayList.addAll(list)
-        // We can use diff utils here but since list wont contain to  much data in this case so going with dataSetChange method
-        notifyDataSetChanged()
+        val diffCallback = HolidayDiffUtil(this.holidayList, list)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        this.holidayList.clear()
+        this.holidayList.addAll(list)
+        diffResult.dispatchUpdatesTo(this)
     }
 }

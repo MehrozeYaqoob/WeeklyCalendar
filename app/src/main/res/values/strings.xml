@@ -17,4 +17,8 @@
     <string name="calendar_icon_license">Calendar Icon made by Freepik from www.flaticon.com</string>
     <string name="infinite_calendar">Infinite Calendar</string>
     <string name="text_orientation">Orientation</string>
+    <string name="holiday_type">public</string>
+    <string name="error_retrieving_local_data">Error while retrieving from Local database</string>
+    <string name="error_saving_remote_data">Error while saving data to Local database</string>
+    <string name="error_fetching_remote_data">Error while fetching data from server</string>
 </resources>

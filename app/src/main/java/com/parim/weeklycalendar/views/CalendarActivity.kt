@@ -3,10 +3,12 @@ package com.parim.weeklycalendar.views
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.parim.weeklycalendar.adapters.HolidayRecyclerAdapter
 import com.parim.weeklycalendar.adapters.HorizontalRecyclerCalendarAdapter
 import com.parim.weeklycalendar.contracts.IDateSelected
@@ -18,6 +20,7 @@ import com.parim.weeklycalendar.provider.HolidayServiceProvider
 import com.parim.weeklycalendar.utils.LinearLayoutManagerWithSmoothScroller
 import com.parim.weeklycalendar.viewmodels.CalendarViewModel
 import com.parim.weeklycalendar.viewmodels.ViewModelFactory
+import kotlinx.coroutines.flow.collect
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -28,15 +31,15 @@ class CalendarActivity : AppCompatActivity() {
     private lateinit var startCal: Calendar
     private lateinit var endCal: Calendar
     private lateinit var recyclerViewConfiguration: RecyclerCalendarConfiguration
-    private lateinit var calendarAdapterHorizontal:HorizontalRecyclerCalendarAdapter
+    private lateinit var calendarAdapterHorizontal: HorizontalRecyclerCalendarAdapter
     private lateinit var calendarViewModel: CalendarViewModel
-    private val holidayRecyclerAdapter:HolidayRecyclerAdapter by lazy {
-        HolidayRecyclerAdapter(ArrayList())
+    private val holidayRecyclerAdapter: HolidayRecyclerAdapter by lazy {
+        HolidayRecyclerAdapter(this, ArrayList())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding  = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         onInitUI()
@@ -47,12 +50,7 @@ class CalendarActivity : AppCompatActivity() {
         onObserveLiveData()
         onAttachPageSnap()
         onLoadData(date)
-//        binding.textViewSelectedDate.text =
-//            CalendarUtils.dateStringFromFormat(
-//                locale = recyclerViewConfiguration.calendarLocale,
-//                date = date,
-//                format = CalendarUtils.LONG_DATE_FORMAT
-//            ) ?: ""
+        onShowErrorMessage()
     }
 
     private fun onInitUI() {
@@ -70,7 +68,7 @@ class CalendarActivity : AppCompatActivity() {
         calendarViewModel = ViewModelProviders.of(
             this,
             ViewModelFactory(HolidayModule(HolidayServiceProvider()), HolidayDAO())
-        ).get(CalendarViewModel::class.java)
+        )[CalendarViewModel::class.java]
     }
 
     private fun onConfigureCalendarRecyclerView() {
@@ -80,11 +78,12 @@ class CalendarActivity : AppCompatActivity() {
                 calendarLocale = Locale.getDefault(),
                 includeMonthHeader = true
             )
-        recyclerViewConfiguration.weekStartOffset = RecyclerCalendarConfiguration.START_DAY_OF_WEEK.MONDAY
+        recyclerViewConfiguration.weekStartOffset =
+            RecyclerCalendarConfiguration.START_DAY_OF_WEEK.MONDAY
 
     }
 
-    private fun onLoadCalendarRecyclerAdapter(){
+    private fun onLoadCalendarRecyclerAdapter() {
         calendarAdapterHorizontal =
             HorizontalRecyclerCalendarAdapter(
                 startDate = startCal.time,
@@ -100,19 +99,20 @@ class CalendarActivity : AppCompatActivity() {
         binding.calendarRecyclerView.adapter = calendarAdapterHorizontal
     }
 
-    private fun  onLoadHolidayRecyclerAdapter(){
-        binding.holidayRecyclerView.layoutManager = LinearLayoutManagerWithSmoothScroller(this, LinearLayoutManager.VERTICAL, false)
+    private fun onLoadHolidayRecyclerAdapter() {
+        binding.holidayRecyclerView.layoutManager =
+            LinearLayoutManagerWithSmoothScroller(this, LinearLayoutManager.VERTICAL, false)
         val animator = object : DefaultItemAnimator() {
             override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder): Boolean {
                 return true
             }
         }
         binding.holidayRecyclerView.itemAnimator = animator
-        binding.holidayRecyclerView.adapter =  holidayRecyclerAdapter
+        binding.holidayRecyclerView.adapter = holidayRecyclerAdapter
     }
 
     private fun onObserveLiveData() {
-        calendarViewModel.holidayLiveData.observe(this, androidx.lifecycle.Observer {
+        calendarViewModel.holidayLiveData.observe(this, {
             holidayRecyclerAdapter.onAddHolidayData(it)
         })
     }
@@ -124,5 +124,13 @@ class CalendarActivity : AppCompatActivity() {
 
     private fun onLoadData(date: Date) {
         calendarViewModel.onLoadData(this, date)
+    }
+
+    private fun onShowErrorMessage() {
+        lifecycleScope.launchWhenCreated {
+            calendarViewModel.errorEventFlow.collect { errorEvent ->
+                Snackbar.make(binding.root, errorEvent.message, Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 }
