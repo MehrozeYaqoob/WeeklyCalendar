@@ -42,7 +42,7 @@ class CalendarActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        onInitUI()
+        onInitCalendar()
         onProvideViewModel()
         onConfigureCalendarRecyclerView()
         onLoadCalendarRecyclerAdapter()
@@ -53,7 +53,7 @@ class CalendarActivity : AppCompatActivity() {
         onShowErrorMessage()
     }
 
-    private fun onInitUI() {
+    private fun onInitCalendar() {
         date = Date()
         date.time = System.currentTimeMillis()
 

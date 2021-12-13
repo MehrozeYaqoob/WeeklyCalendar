@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WeeklyCalendar</string>
+    <string name="app_name">PARiM Test</string>
 
     <string name="week_calendar">Week Calendar</string>
     <string name="month_calendar">Month Calendar</string>

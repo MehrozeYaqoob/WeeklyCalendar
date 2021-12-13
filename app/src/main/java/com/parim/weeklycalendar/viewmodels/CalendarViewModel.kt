@@ -91,6 +91,7 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository): Vie
         }
     }
 
+    // Step 5: Error handling if needed
     fun triggerErrorEvent(errorEvents: ErrorEvents) = viewModelScope.launch {
         errorEventChannel.send(errorEvents)
     }

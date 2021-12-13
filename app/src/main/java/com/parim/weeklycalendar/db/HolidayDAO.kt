@@ -9,7 +9,7 @@ import io.realm.Realm
 
 class HolidayDAO(private val realm: Realm = Realm.getDefaultInstance()) {
 
-    /* * This saves data fetched from server, in realm database */
+    /* * Write Operation */
     fun onSaveRemoteData(context: Context?, holidays: List<RealmDTO>, callbackSaveRemoteData: IRealmCallback<Boolean>, dateSelected: String){
         realm.executeTransactionAsync ({
             when { holidays.isNotEmpty() -> it.deleteAll() }
@@ -21,6 +21,7 @@ class HolidayDAO(private val realm: Realm = Realm.getDefaultInstance()) {
         })
     }
 
+    /* * Read Operation */
     fun onRetrieveLocalData(context: Context?,dateSelected: String, callbackGetLocalData: IRepositoryCallback<FilteredRealmDTO>){
         realm.executeTransactionAsync {
             val data =

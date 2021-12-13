@@ -1,9 +1,8 @@
 package com.parim.weeklycalendar.provider
-
-import RetrofitProvider
 import com.parim.weeklycalendar.contracts.IHolidayAPI
 import com.parim.weeklycalendar.contracts.IHolidayService
 import com.parim.weeklycalendar.model.RequestDTO
+import com.parim.weeklycalendar.networking.RetrofitProvider
 import retrofit2.Call
 
 class HolidayServiceProvider(private val api: IHolidayAPI = RetrofitProvider.createAPI(

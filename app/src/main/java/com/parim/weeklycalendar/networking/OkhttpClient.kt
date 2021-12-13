@@ -1,3 +1,4 @@
+package com.parim.weeklycalendar.networking
 import com.parim.weeklycalendar.BuildConfig
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
