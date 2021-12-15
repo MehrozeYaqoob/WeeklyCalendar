@@ -40,6 +40,16 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_large" />
 
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/textViewNoEvent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size_22"
+        android:text="@string/no_event"
+        android:layout_marginTop="@dimen/margin_40"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

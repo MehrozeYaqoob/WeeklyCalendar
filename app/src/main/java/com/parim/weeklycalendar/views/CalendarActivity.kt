@@ -1,11 +1,9 @@
 package com.parim.weeklycalendar.views
 
-import android.R
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -29,12 +27,9 @@ import kotlinx.coroutines.flow.collect
 import java.util.*
 import kotlin.collections.ArrayList
 import android.widget.ArrayAdapter
-import android.widget.Spinner
-
-
-
-
-
+import android.text.format.DateFormat;
+import android.util.Log
+import com.parim.weeklycalendar.R
 
 
 class CalendarActivity : AppCompatActivity() {
@@ -65,14 +60,7 @@ class CalendarActivity : AppCompatActivity() {
         onAttachPageSnap()
         onLoadData(date)
         onShowErrorMessage()
-    }
-
-    private fun onConfigureSpinner() {
-        val aa: ArrayAdapter<*> = ArrayAdapter<Any?>(this, R.layout.simple_spinner_item, applicationContext.resources.getStringArray(com.parim.weeklycalendar.R.array.english_days))
-        aa.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-        binding.root.daySpinner.adapter = aa
-        binding.root.daySpinner.setSelection(0,false)
-        binding.root.daySpinner.onItemSelectedListener = itemSelected
+        onScrollViaButtons()
     }
 
     private fun onInitCalendar() {
@@ -84,6 +72,17 @@ class CalendarActivity : AppCompatActivity() {
         endCal = Calendar.getInstance()
         endCal.time = date
         endCal.add(Calendar.MONTH, 1)
+    }
+
+    private fun onConfigureSpinner() {
+        val aa: ArrayAdapter<*> = ArrayAdapter<Any?>(this, android.R.layout.simple_spinner_item, applicationContext.resources.getStringArray(
+            R.array.english_days))
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.root.daySpinner.adapter = aa
+        binding.root.daySpinner.setSelection(0,false)
+        binding.root.daySpinner.onItemSelectedListener = itemSelected
+        val dayOfTheWeek = DateFormat.format("EEEE", date) as String
+        binding.root.daySpinner.setSelection(applicationContext.resources.getStringArray(R.array.english_days).indexOf(dayOfTheWeek))
     }
 
     private fun onProvideViewModel() {
@@ -100,9 +99,6 @@ class CalendarActivity : AppCompatActivity() {
                 calendarLocale = Locale.getDefault(),
                 includeMonthHeader = true
             )
-        recyclerViewConfiguration.weekStartOffset =
-            RecyclerCalendarConfiguration.START_DAY_OF_WEEK.MONDAY
-
     }
 
     private fun onLoadCalendarRecyclerAdapter() {
@@ -112,11 +108,7 @@ class CalendarActivity : AppCompatActivity() {
                 endDate = endCal.time,
                 configuration = recyclerViewConfiguration,
                 selectedDate = date,
-                dateSelectListener = object : IDateSelected {
-                    override fun onDateSelected(date: Date) {
-                        onLoadData(date)
-                    }
-                }
+                dateSelectListener = dateSelected
             )
         binding.calendarRecyclerView.adapter = calendarAdapterHorizontal
     }
@@ -135,6 +127,11 @@ class CalendarActivity : AppCompatActivity() {
 
     private fun onObserveLiveData() {
         calendarViewModel.holidayLiveData.observe(this, {
+            if(it.isEmpty()){
+                binding.root.textViewNoEvent.visibility=View.VISIBLE
+            }else {
+                binding.root.textViewNoEvent.visibility=View.GONE
+            }
             holidayRecyclerAdapter.onAddHolidayData(it)
         })
     }
@@ -156,13 +153,32 @@ class CalendarActivity : AppCompatActivity() {
         }
     }
 
+    private fun onScrollViaButtons(){
+        val offSet = 7
+        var position =  0
+        binding.root.btnRightArrow.setOnClickListener {
+            position+=offSet
+            binding.root.calendarRecyclerView.post(Runnable { binding.root.calendarRecyclerView.smoothScrollToPosition(position) })
+        }
+        binding.root.btnLeftArrow.setOnClickListener {
+            position-=offSet
+            (if (position < 0)  0 else position).also { position = it }
+            binding.root.calendarRecyclerView.post(Runnable { binding.root.calendarRecyclerView.smoothScrollToPosition(position) })
+        }
+    }
+
+    private val dateSelected  =  object : IDateSelected {
+        override fun onDateSelected(date: Date) {
+            onLoadData(date)
+        }
+    }
+
     private val  itemSelected = object : AdapterView.OnItemSelectedListener {
-        override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-            Toast.makeText(applicationContext,"Clicked", Toast.LENGTH_LONG).show()
+        override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, id: Long) {
         }
 
         override fun onNothingSelected(p0: AdapterView<*>?) {
-            TODO("Not yet implemented")
+
         }
     }
 }
