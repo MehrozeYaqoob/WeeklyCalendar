@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android-extensions'
     id 'kotlin-kapt'
     id 'realm-android'
-
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -70,7 +70,7 @@ dependencies {
     implementation 'android.arch.lifecycle:extensions:1.1.1'
 
     // OkHttp
-    implementation 'com.squareup.okhttp3:okhttp:4.0.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
     implementation "com.squareup.retrofit2:converter-gson:2.7.1"
     implementation 'com.squareup.okhttp3:logging-interceptor:4.0.0'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.0.0'
@@ -87,4 +87,7 @@ dependencies {
     // Coroutine Lifecycle Scopes
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.0"
+
+    //Firebase
+    implementation 'com.google.firebase:firebase-config:21.0.1'
 }

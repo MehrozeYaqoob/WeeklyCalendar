@@ -28,7 +28,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import android.widget.ArrayAdapter
 import android.text.format.DateFormat;
-import android.util.Log
 import com.parim.weeklycalendar.R
 
 

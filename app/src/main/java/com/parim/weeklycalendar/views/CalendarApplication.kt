@@ -7,7 +7,10 @@ import io.realm.RealmConfiguration
 class CalendarApplication: Application() {
     override fun onCreate() {
         super.onCreate()
+        onInitRealm()
+    }
 
+    private fun onInitRealm(){
         Realm.init(this)
         val config = RealmConfiguration.Builder()
             .name("estonian_calender.realm")

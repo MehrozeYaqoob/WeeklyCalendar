@@ -40,8 +40,8 @@ class CalendarViewModel(private val calendarRepository: CalendarRepository): Vie
         cal.time = today
         cal.add(Calendar.MONTH,1)
 
-        // This value 15 is configurable from remote config
-        if(lastFetchedTime == currentTime || diff > 15){
+        // This value is configurable from remote config
+        if(lastFetchedTime == currentTime || diff > PreferenceManager.getDaysAfterRemoteDataFetched(context, 10)){
             // fetch remote data
             onRemoteDataFetched(context =  context,  startDate = dateFormat.format(today), endDate = dateFormat.format(cal.time))
         }else{
