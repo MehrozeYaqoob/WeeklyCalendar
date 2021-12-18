@@ -6,6 +6,8 @@ plugins {
     id 'realm-android'
     id 'com.google.gms.google-services'
 }
+//apply from: '../sonarConfig/sonarq.gradle'
+
 
 android {
     compileSdk 31

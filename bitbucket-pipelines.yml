@@ -1,0 +1,45 @@
+image: openjdk:8
+
+clone:
+  depth: full              # SonarCloud scanner needs the full history to assign issues properly
+
+definitions:
+  caches:
+    sonar: ~/.sonar/cache  # Caching SonarCloud artifacts will speed up your build
+  steps:
+    - step: &build-test-sonarcloud
+        size: 2x
+        name: Build, test and analyze on SonarCloud
+        caches:
+          - gradle
+          - sonar
+        script:
+          # Download and unzip android sdk
+          - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+          - unzip -o -qq android-sdk.zip -d android-sdk
+
+          # Define Android Home and add PATHs
+          - export ANDROID_HOME="/opt/atlassian/pipelines/agent/build/android-sdk"
+          - export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH"
+
+          # Download packages.
+          - yes | sdkmanager "platform-tools"
+          - yes | sdkmanager "platforms;android-27"
+          - yes | sdkmanager "build-tools;27.0.3"
+          - yes | sdkmanager "extras;android;m2repository"
+          - yes | sdkmanager "extras;google;m2repository"
+          - yes | sdkmanager "extras;google;instantapps"
+          - yes | sdkmanager --licenses
+          - chmod +x gradlew
+          #- ./gradlew build sonarqube --stacktrace
+          - ./gradlew clean assembleAlphaDebug lintAlphaDebug testAlphaDebugUnitTest sonarqube --stacktrace
+        artifacts:
+          - build/libs/**
+
+pipelines:                 # More info here: https://confluence.atlassian.com/bitbucket/configure-bitbucket-pipelines-yml-792298910.html
+  branches:
+    development:
+      - step: *build-test-sonarcloud
+  pull-requests:
+    '**':
+      - step: *build-test-sonarcloud
