@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "6462484632",
+    "project_id": "parim-6c97c",
+    "storage_bucket": "parim-6c97c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6462484632:android:b30794a5f03deb27b420ed",
+        "android_client_info": {
+          "package_name": "com.parim.weeklycalendar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "6462484632-b7bcie7es1ocvht9lkf1bbs66u8maf0u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAP3zHtamE8vOPmhg4EbzEOU9CCngL4ig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "6462484632-b7bcie7es1ocvht9lkf1bbs66u8maf0u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
