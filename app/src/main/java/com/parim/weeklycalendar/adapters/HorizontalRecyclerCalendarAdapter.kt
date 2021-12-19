@@ -23,13 +23,13 @@ class HorizontalRecyclerCalendarAdapter(
     private val dateSelectListener: IDateSelected
 ) : RecyclerCalendarBaseAdapter(startDate, endDate, configuration) {
 
+    var monthCalendarViewHolder: MonthCalendarViewHolder? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view: View = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_calendar_horizontal, parent, false)
-        return MonthCalendarViewHolder(
-            view
-        )
+        monthCalendarViewHolder = MonthCalendarViewHolder(view)
+        return monthCalendarViewHolder!!
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -137,5 +137,10 @@ class HorizontalRecyclerCalendarAdapter(
                 }
             }
         }
+    }
+
+    /*This is a known bug. Method doesn't produce the desired output.*/
+    fun performClickOnItemView(){
+        monthCalendarViewHolder?.itemView?.performClick()
     }
 }

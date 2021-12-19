@@ -80,8 +80,8 @@ class CalendarActivity : AppCompatActivity() {
         binding.root.daySpinner.adapter = aa
         binding.root.daySpinner.setSelection(0,false)
         binding.root.daySpinner.onItemSelectedListener = itemSelected
-        val dayOfTheWeek = DateFormat.format("EEEE", date) as String
-        binding.root.daySpinner.setSelection(applicationContext.resources.getStringArray(R.array.english_days).indexOf(dayOfTheWeek))
+//        val dayOfTheWeek = DateFormat.format("EEEE", date) as String
+//        binding.root.daySpinner.setSelection(applicationContext.resources.getStringArray(R.array.english_days).indexOf(dayOfTheWeek))
     }
 
     private fun onProvideViewModel() {
@@ -174,6 +174,8 @@ class CalendarActivity : AppCompatActivity() {
 
     private val  itemSelected = object : AdapterView.OnItemSelectedListener {
         override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, id: Long) {
+            // This is incomplete. Would need more time to solve this bug which is difficult because of tight deadlines
+            calendarAdapterHorizontal.performClickOnItemView()
         }
 
         override fun onNothingSelected(p0: AdapterView<*>?) {
