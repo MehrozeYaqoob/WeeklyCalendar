@@ -9,6 +9,8 @@ Many unit cases are written using roboelectric, mockito and power mockito. One c
 
 Realm is used as database which stores estonians holidays
 
+Channels are used error handling with flows
+
 UI is simple and a library is used for horizontal UI depiction of calendar. It can be written to get more control
 
 Retrofit and okHttp is used for network calling
